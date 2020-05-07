@@ -18,17 +18,29 @@ class Quake: NSObject, Decodable {
 
     enum CodingKeys: String, CodingKey {
         case magnitude = "mag"
+        case place
+        case time
+        case latitude
+        case longitude
+
+        case properties
+        case geometry
+        case coordinates
     }
 
     required init(from decoder: Decoder) throws {
         // Containers to pull out data
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let properties = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .properties)
+        let geometry = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .geometry)
+        var coordinates = try geometry.nestedUnkeyedContainer(forKey: .coordinates)
 
         // Extract properties
-        self.magnitude = 0
-        self.time = Date()
-        self.place = ""
-        self.latitude = 0
-        self.longitude = 0
+        self.magnitude = try properties.decode(Double.self, forKey: .magnitude)
+        self.time = try properties.decode(Date.self, forKey: .time)
+        self.place = try properties.decode(String.self, forKey: .place)
+        self.longitude = try coordinates.decode(Double.self)
+        self.latitude = try coordinates.decode(Double.self)
 
         super.init()
     }
